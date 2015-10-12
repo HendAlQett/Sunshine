@@ -75,7 +75,7 @@ public class DetailActivity extends ActionBarActivity {
 
             static final String FORECAST_SHARE_HASHTAG = "#SunshineApp";
             final String LOG_TAG = DetailFragment.class.getSimpleName();
-            private String mForecastData;
+            private String mForecastStr;
 
             public DetailFragment() {
                 //Important
@@ -87,13 +87,16 @@ public class DetailActivity extends ActionBarActivity {
                                      Bundle savedInstanceState) {
 
                 Intent intent = getActivity().getIntent();
-                if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                    mForecastData = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (intent != null) {
+                    mForecastStr = intent.getDataString();
                 }
+//                if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+//                    mForecastData = intent.getStringExtra(Intent.EXTRA_TEXT);
+//                }
 
                 View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
                 TextView tvForecastData = (TextView) rootView.findViewById(R.id.detail_text);
-                tvForecastData.setText(mForecastData);
+                tvForecastData.setText(mForecastStr);
                 return rootView;
             }
 
@@ -117,7 +120,7 @@ public class DetailActivity extends ActionBarActivity {
                 //Prevents the new opened activity we are sharing to, to be on the activity stack
                 shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
                 shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, mForecastData + FORECAST_SHARE_HASHTAG);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, mForecastStr + FORECAST_SHARE_HASHTAG);
                 return shareIntent;
 
             }
