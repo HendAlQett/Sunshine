@@ -1,14 +1,13 @@
 package com.hendalqett.app.sunshine;
 
 
-
-
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -90,17 +89,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String locationSetting = Utility.getPreferredLocation(getActivity());
 
         // Sort order:  Ascending, by date.
-        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                locationSetting, System.currentTimeMillis());
+//        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+//        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+//                locationSetting, System.currentTimeMillis());
 
-        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
-                null, null, null, sortOrder);
+//        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
+//                null, null, null, sortOrder);
+
 
         // The CursorAdapter will take data from our cursor and populate the ListView
         // However, we cannot use FLAG_AUTO_REQUERY since it is deprecated, so we will end
         // up with an empty list the first time we run.
-        mForecastAdapter = new ForecastAdapter(getActivity(), cur, 0);
+
+        // The CursorAdapter will take data from our cursor and populate the ListView.
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
@@ -152,7 +154,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             }
         });
 
+//        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+
+        getLoaderManager().initLoader(FORECAST_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -439,7 +450,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
-     * <p>
+     * <p/>
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
@@ -546,10 +557,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String locationSettings = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSettings, System.currentTimeMillis());
+
+        Log.d(LOG_TAG, weatherForLocationUri.toString());
+
         return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
 
     }
-
 
 
     @Override
