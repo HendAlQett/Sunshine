@@ -96,17 +96,16 @@ public class ForecastAdapter extends CursorAdapter {
         int viewType = getItemViewType(cursor.getPosition());
         int layoutId = -1;
         // TODO: Determine layoutId from viewType
-        switch (viewType)
-        {
+        switch (viewType) {
             case 0:
-                layoutId= R.layout.list_item_forecast_today;
+                layoutId = R.layout.list_item_forecast_today;
                 break;
             case 1:
-                layoutId=R.layout.list_item_forecast;
+                layoutId = R.layout.list_item_forecast;
                 break;
         }
-        View view =LayoutInflater.from(context).inflate(layoutId, parent, false);
-        ViewHolder viewHolder= new ViewHolder(view);
+        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
+        ViewHolder viewHolder = new ViewHolder(view);
         view.setTag(viewHolder);
         return view;
     }
@@ -132,20 +131,35 @@ public class ForecastAdapter extends CursorAdapter {
 
         // Read weather icon ID from cursor
         int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_ID);
-        // Use placeholder image for now
-//        ImageView iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-        viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+
+//        viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+
+        int viewType = getItemViewType(cursor.getPosition());
+        switch (viewType) {
+            case VIEW_TYPE_TODAY: {
+                // Get weather icon
+                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(
+                        cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID)));
+                break;
+            }
+            case VIEW_TYPE_FUTURE_DAY: {
+                // Get weather icon
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(
+                        cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID)));
+                break;
+            }
+        }
 
         // TODO Read date from cursor
 
-        long date= cursor.getLong(ForecastFragment.COL_WEATHER_DATE);
-        Log.d("Date",String.valueOf(date));
+        long date = cursor.getLong(ForecastFragment.COL_WEATHER_DATE);
+        Log.d("Date", String.valueOf(date));
 //        TextView dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
-        viewHolder.dateView.setText(Utility.getFriendlyDayString(context,date));
+        viewHolder.dateView.setText(Utility.getFriendlyDayString(context, date));
 
 
         // TODO Read weather forecast from cursor
-        String weatherForecast= cursor.getString(ForecastFragment.COL_WEATHER_DESC);
+        String weatherForecast = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
 //        TextView weatherForecastView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
         viewHolder.descriptionView.setText(weatherForecast);
 
@@ -155,12 +169,12 @@ public class ForecastAdapter extends CursorAdapter {
         // Read high temperature from cursor
         double high = cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP);
 //        TextView highView = (TextView) view.findViewById(R.id.list_item_high_textview);
-        viewHolder.highTempView.setText(Utility.formatTemperature(context,high, isMetric));
+        viewHolder.highTempView.setText(Utility.formatTemperature(context, high, isMetric));
 
         // TODO Read low temperature from cursor
         double low = cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP);
 //        TextView lowView = (TextView) view.findViewById(R.id.list_item_low_textview);
-        viewHolder.lowTempView.setText(Utility.formatTemperature(context,low, isMetric));
+        viewHolder.lowTempView.setText(Utility.formatTemperature(context, low, isMetric));
 
     }
 }
