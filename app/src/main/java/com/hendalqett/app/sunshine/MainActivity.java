@@ -1,10 +1,8 @@
 package com.hendalqett.app.sunshine;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,18 +14,41 @@ public class MainActivity extends ActionBarActivity {
 
     final String LOG_TAG = MainActivity.class.getSimpleName();
     String mLocation;
-    private final String FORECASTFRAGMENT_TAG = "FFTAG";
+
+    //private final String FORECASTFRAGMENT_TAG = "FFTAG";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    boolean mTwoPane;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mLocation= Utility.getPreferredLocation(this);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
-                    .commit();
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
+//                    .commit();
+//        }
+//        Log.d(LOG_TAG,"onCreate");
+
+
+        if (findViewById(R.id.weather_detail_container) != null) {
+            // The detail container view will be present only in the large-screen layouts
+            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // in two-pane mode.
+            mTwoPane = true;
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+            //I don't need to inflate the fragment again if savedInstanceState in not null because the system saved the fragment on orientation.
+        } else {
+            mTwoPane = false;
         }
-        Log.d(LOG_TAG,"onCreate");
+
     }
 
 
@@ -45,7 +66,7 @@ public class MainActivity extends ActionBarActivity {
         String location = Utility.getPreferredLocation( this );
                // update the location in our second pane using the fragment manager
                 if (location != null && !location.equals(mLocation)) {
-                      ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+                    ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
                       if ( null != ff ) {
                              ff.onLocationChanged();
                           }
