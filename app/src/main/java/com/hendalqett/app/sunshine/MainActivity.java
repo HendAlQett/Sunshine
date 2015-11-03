@@ -9,7 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback{
 
 
     final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -18,11 +18,12 @@ public class MainActivity extends ActionBarActivity {
     //private final String FORECASTFRAGMENT_TAG = "FFTAG";
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     boolean mTwoPane;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mLocation= Utility.getPreferredLocation(this);
+        mLocation = Utility.getPreferredLocation(this);
 //        if (savedInstanceState == null) {
 //            getSupportFragmentManager().beginTransaction()
 //                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
@@ -63,15 +64,30 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         Log.d(LOG_TAG, "onResume");
 
-        String location = Utility.getPreferredLocation( this );
-               // update the location in our second pane using the fragment manager
-                if (location != null && !location.equals(mLocation)) {
-                    ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
-                      if ( null != ff ) {
-                             ff.onLocationChanged();
-                          }
-                     mLocation = location;
-                  }
+//        String location = Utility.getPreferredLocation(this);
+//        // update the location in our second pane using the fragment manager
+//        if (location != null && !location.equals(mLocation)) {
+//            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+//            if (null != ff) {
+//                ff.onLocationChanged();
+//            }
+//            mLocation = location;
+//        }
+
+
+        String location = Utility.getPreferredLocation(this);
+        // update the location in our second pane using the fragment manager
+        if (location != null && !location.equals(mLocation)) {
+            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+            if (null != ff) {
+                ff.onLocationChanged();
+            }
+            DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                      if ( null != df ) {
+                             df.onLocationChanged(location);
+            }
+            mLocation = location;
+        }
     }
 
     @Override
@@ -111,9 +127,7 @@ public class MainActivity extends ActionBarActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        }
-        else if (id==R.id.action_map)
-        {
+        } else if (id == R.id.action_map) {
             openPreferredLocationInMap();
         }
 
@@ -121,23 +135,20 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void openPreferredLocationInMap()
-    {
+    private void openPreferredLocationInMap() {
 
 //        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this); //getDefSharedPreferences(getString(R.string.pref_location_key),Context.MODE_PRIVATE);
 //        String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
         String location = Utility.getPreferredLocation(this);
 
-        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q",location).build();
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q", location).build();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(geoLocation);
-        if(intent.resolveActivity(getPackageManager())!=null)
-        {
+        if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
-        }
-        else {
-            Log.d(LOG_TAG,"Couldn't call "+location);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + location);
         }
         //showMap(geoLocation);
     }
@@ -148,5 +159,28 @@ public class MainActivity extends ActionBarActivity {
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onItemSelected(Uri contentUri) {
+
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+                                // adding or replacing the detail fragment using a
+                                         // fragment transaction.
+                                               Bundle args = new Bundle();
+                       args.putParcelable(DetailFragment.DETAIL_URI, contentUri);
+                               DetailFragment fragment = new DetailFragment();
+                       fragment.setArguments(args);
+                               getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
+                                       .commit();
+        } else {
+                       Intent intent = new Intent(this, DetailActivity.class)
+                                       .setData(contentUri);
+                       startActivity(intent);
+                   }
+
+
     }
 }

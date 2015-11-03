@@ -2,6 +2,7 @@ package com.hendalqett.app.sunshine;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -72,6 +73,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView mWindView;
     private TextView mPressureView;
 
+    static final String DETAIL_URI = "URI";
+    private Uri mUri;
+
     public DetailFragment() {
         //Important
         setHasOptionsMenu(true);
@@ -81,10 +85,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            mForecastStr = intent.getDataString();
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mUri = arguments.getParcelable(DetailFragment.DETAIL_URI);
         }
+
+//        Intent intent = getActivity().getIntent();
+//        if (intent != null) {
+//            mForecastStr = intent.getDataString();
+//        }
 //                if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
 //                    mForecastData = intent.getStringExtra(Intent.EXTRA_TEXT);
 //                }
@@ -108,6 +118,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(DETAIL_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
+    }
+
+    void onLocationChanged(String newLocation) {
+        // replace the uri, since the location has changed
+        Uri uri = mUri;
+        if (null != uri) {
+            long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+            Uri updatedUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+            mUri = updatedUri;
+            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+        }
     }
 
     @Override
@@ -139,11 +160,25 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        Intent intent = getActivity().getIntent();
-        if (intent == null || intent.getData()==null) {
-            return null;
+//        Intent intent = getActivity().getIntent();
+//        if (intent == null || intent.getData() == null) {
+//            return null;
+//        }
+//        return new CursorLoader(getActivity(), intent.getData(), DETAIL_COLUMNS, null, null, null);
+
+        if (null != mUri) {
+            // Now create and return a CursorLoader that will take care of
+            // creating a Cursor for the data being displayed.
+            return new CursorLoader(
+                    getActivity(),
+                    mUri,
+                    DETAIL_COLUMNS,
+                    null,
+                    null,
+                    null
+            );
         }
-        return new CursorLoader(getActivity(), intent.getData(), DETAIL_COLUMNS, null, null, null);
+        return null;
 
     }
 
@@ -210,5 +245,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
+
 }
 
