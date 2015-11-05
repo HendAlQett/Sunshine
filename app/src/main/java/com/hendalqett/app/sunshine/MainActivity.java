@@ -48,6 +48,8 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
             //I don't need to inflate the fragment again if savedInstanceState in not null because the system saved the fragment on orientation.
         } else {
             mTwoPane = false;
+            //To remove the shadow under the ActionBar
+            getSupportActionBar().setElevation(0f);
         }
 
         ForecastFragment forecastFragment = ((ForecastFragment) getSupportFragmentManager()
