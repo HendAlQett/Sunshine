@@ -1,6 +1,10 @@
 package com.hendalqett.app.sunshine;
 
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.hendalqett.app.sunshine.data.WeatherContract;
+import com.hendalqett.app.sunshine.service.SunshineService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -238,13 +243,25 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
 
     private void updateWeather() {
-//        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity()); //getDefSharedPreferences(getString(R.string.pref_location_key),Context.MODE_PRIVATE);
-//        String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-////        FetchWeatherTask weatherTask = new FetchWeatherTask();
-//        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(), mForecastAdapter); //mForecastAdapter
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-        String location = Utility.getPreferredLocation(getActivity());
-        weatherTask.execute(location);
+
+//        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+//        String location = Utility.getPreferredLocation(getActivity());
+        //weatherTask.execute(location);
+
+        //1- create an intent for the receiver
+        Intent alarmIntent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
+        alarmIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,Utility.getPreferredLocation(getActivity()));
+        //2- Wrap this intent in a pending intent.
+        PendingIntent pendingIntent= PendingIntent.getBroadcast(getActivity(),0,alarmIntent,PendingIntent.FLAG_ONE_SHOT);
+        //3- Get the Alarm service
+        AlarmManager am = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+        //4- Set the Alarm to trigger 5 seconds from now
+        am.set(AlarmManager.RTC_WAKEUP,System.currentTimeMillis()+5000,pendingIntent);
+        //5- Start the service inside onReceive
+//        Intent intent = new Intent(getActivity(), SunshineService.class);
+//        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,
+//              Utility.getPreferredLocation(getActivity()));
+//        getActivity().startService(intent);
     }
 
 //    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
